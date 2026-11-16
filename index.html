@@ -470,7 +470,19 @@ function draw(){let p=points(),ns=Object.keys(p).map(Number).sort((a,b)=>a-b),to
 
 function esc(x){return String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
-function del(n){if(confirm('Hapus data titik '+n+' di '+store.villages[village].name+'?')){delete points()[n];persist();if(cur===n){form.reset();choose(n)}}}
+async function del(n){
+  if(!confirm('Hapus data titik '+n+' di '+store.villages[village].name+'? Penghapusan akan disinkronkan ke semua perangkat.'))return;
+  const key=village,stamp=new Date().toISOString(),deleted=pbDeletedMap();
+  deleted[`${key}_${n}`]=stamp;pbSaveDeletedMap(deleted);
+  delete store.villages[key].points[n];persist();
+  if(cur===n){form.reset();choose(n)}
+  if(navigator.onLine){
+    try{await pbSyncDelete(key,n,stamp);alert('Titik '+n+' berhasil dihapus dan penghapusannya tersimpan di Supabase. Perangkat lain akan ikut menghapus saat tersinkron.');}
+    catch(e){alert('Titik '+n+' dihapus dari perangkat ini. Sinkronisasi penghapusan belum berhasil: '+e.message+'. Penghapusan akan dicoba lagi saat internet tersedia.');}
+  }else{
+    alert('Titik '+n+' dihapus dari perangkat ini. Penghapusan akan disinkronkan saat internet tersedia.');
+  }
+}
 
 function lib(){if(!window.jspdf?.jsPDF){alert('Pustaka PDF belum termuat. Periksa koneksi internet lalu muat ulang. Data tetap tersimpan di perangkat.');return null}return window.jspdf.jsPDF}
 
@@ -681,6 +693,16 @@ const SB_URL='https://jkryhiwyazkebnyjmvhu.supabase.co';
 const SB_KEY='sb_publishable_RF75j2iwWPGq1aILjwGIkw_WiJF9xh6';
 const SB_TABLE='praktik_baik_curahdami';
 const SB_BUCKET='praktik-baik-curahdami';
+const PB_DELETED_KEY='pb_curahdami_deleted_v1';
+function pbDeletedMap(){try{return JSON.parse(localStorage.getItem(PB_DELETED_KEY)||'{}')}catch(e){return {}}}
+function pbSaveDeletedMap(v){localStorage.setItem(PB_DELETED_KEY,JSON.stringify(v))}
+async function pbSyncDelete(key,n,stamp){
+  const sb=await supabaseReady(),v=store.villages[key];
+  const row={id:`${key}_titik_${n}`,kode_desa:key,desa:v?.name||key,titik:Number(n),data:{},media:[],updated_at:stamp,is_deleted:true};
+  const {error}=await sb.from(SB_TABLE).upsert(row,{onConflict:'id'});
+  if(error)throw error;
+}
+
 let sbClient=null, sbReadyPromise=null;
 async function supabaseReady(){
   if(sbClient)return sbClient;
@@ -709,7 +731,7 @@ async function pbSyncOne(key,n){
       media.push({type,name:file.name,path,url:urlData.publicUrl,size:file.size,mime:file.mime});
     }
   }
-  const stamp=d._localUpdatedAt||new Date().toISOString();const row={id:`${key}_titik_${n}`,kode_desa:key,desa:v.name,titik:Number(n),data:d,media,updated_at:stamp};
+  const stamp=d._localUpdatedAt||new Date().toISOString();const row={id:`${key}_titik_${n}`,kode_desa:key,desa:v.name,titik:Number(n),data:d,media,updated_at:stamp,is_deleted:false};
   const {error}=await sb.from(SB_TABLE).upsert(row,{onConflict:'id'});if(error)throw error;
   return media.length;
 }
@@ -728,7 +750,7 @@ async function ambilDataSupabase(silent=false){
   try{
     if(!silent)pbStatus('Mengambil data dari Supabase...');
     const sb=await supabaseReady();
-    const {data,error}=await sb.from(SB_TABLE).select('id,kode_desa,desa,titik,data,media,updated_at');
+    const {data,error}=await sb.from(SB_TABLE).select('id,kode_desa,desa,titik,data,media,updated_at,is_deleted');
     if(error)throw error;
     let count=0;
     for(const row of (data||[])){
@@ -738,6 +760,19 @@ async function ambilDataSupabase(silent=false){
       const remoteDate=Date.parse(row.updated_at||'')||0;
       const local=store.villages[k].points[n];
       const localDate=Date.parse(local?._localUpdatedAt||local?._cloudUpdatedAt||'')||0;
+      const deletedMap=pbDeletedMap();
+      const localDeleteDate=Date.parse(deletedMap[`${k}_${n}`]||'')||0;
+      if(row.is_deleted){
+        if(remoteDate>=localDate && remoteDate>=localDeleteDate){
+          delete store.villages[k].points[n];
+          if(remoteDate>=localDeleteDate)delete deletedMap[`${k}_${n}`];
+        }
+        pbSaveDeletedMap(deletedMap);
+        continue;
+      }
+      if(localDeleteDate>remoteDate){
+        continue;
+      }
       if(!local||remoteDate>=localDate){
         store.villages[k].points[n]={...(row.data||{}),_cloudUpdatedAt:row.updated_at||'',_localUpdatedAt:row.updated_at||''};
         count++;
@@ -771,12 +806,24 @@ async function pbAutoSyncAll(){
   const rows=await ambilDataSupabase(true);
   if(rows===null)return;
   const keys=['A','B','C','D','E','F','G','H','I','J','K'];
+  const deletedMap=pbDeletedMap();
+  for(const [compound,stamp] of Object.entries(deletedMap)){
+    const [dk,dn]=compound.split('_');
+    if(!store.villages[dk]||!dn)continue;
+    const cloud=rows.find(r=>r.id===`${dk}_titik_${dn}`);
+    const cloudTime=Date.parse(cloud?.updated_at||'')||0;
+    const deleteTime=Date.parse(stamp)||0;
+    if(!cloud||deleteTime>cloudTime){
+      try{await pbSyncDelete(dk,Number(dn),stamp)}catch(err){console.warn(`Gagal sinkron hapus ${dk}/${dn}:`,err.message);}
+    }
+  }
   for(const k of keys){
     for(const n of Object.keys(store.villages[k].points||{}).map(Number).sort((a,b)=>a-b)){
       const d=store.villages[k].points[n];
       const cloud=rows.find(r=>r.id===`${k}_titik_${n}`);
       const localTime=Date.parse(d._localUpdatedAt||'')||0;
       const cloudTime=Date.parse(cloud?.updated_at||'')||0;
+      if(cloud?.is_deleted && cloudTime>=localTime){delete store.villages[k].points[n];continue;}
       if(!cloud||localTime>cloudTime){
         try{
           await pbSyncOne(k,n);
