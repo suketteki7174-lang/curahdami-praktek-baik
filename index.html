@@ -149,6 +149,7 @@ a{overflow-wrap:anywhere}
 #recapMenu{overflow:hidden}
 .recap-village{margin:14px 0;padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff}
 .recap-village h3{margin:0 0 10px;color:var(--g);font-size:16px}
+.recap-village-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.recap-village-head h3{margin:0}.recap-village-head button{white-space:nowrap}
 .recap-table-wrap{overflow-x:auto;width:100%}
 .recap-table{border-collapse:collapse;min-width:1050px;width:100%;font-size:12px}
 .recap-table th,.recap-table td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}
@@ -234,6 +235,8 @@ a{overflow-wrap:anywhere}
 #syncStatus{padding:9px;background:#f1f7f3;border-radius:8px;margin-top:8px;overflow-wrap:anywhere}
 @media(max-width:600px){.media-preview{grid-template-columns:repeat(3,minmax(0,1fr))}.media-card img,.media-card video{height:75px}}
 
+
+#syncStatus{display:none!important}
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script></head>
@@ -303,46 +306,7 @@ a{overflow-wrap:anywhere}
     <button type="button" class="light" onclick="buatNarasiOtomatis()">✨ Buat Narasi Otomatis</button>
   </div>
 </div>
-<div class="section">F. DOKUMENTASI FOTO (8–10 FOTO)</div>
-<div class="field full">
-  <label>Dokumentasi foto titik ini (maksimal 10 foto)</label>
-  <input id="fotoTitik" type="file" accept="image/*" multiple style="display:none">
-  <input id="fotoKamera" type="file" accept="image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-  <div class="actions">
-    <button type="button" class="primary" onclick="pbStartLiveCamera()">📷 Ambil Foto dengan Kamera</button>
-    <button type="button" class="light" onclick="document.getElementById('fotoTitik').click()">＋ Pilih dari Galeri</button>
-    <span id="fotoCount" class="empty">0/10 foto</span>
-  </div>
-  <small class="empty">Tekan Tambah Foto berkali-kali untuk menambahkan foto secara bertahap. Foto lama tetap tersimpan.</small>
-  <div id="fotoPreview" class="media-preview"></div>
-</div>
-<div class="section">G. DOKUMENTASI VIDEO (1–2 VIDEO)</div>
-<div class="field full">
-  <label>Dokumentasi video titik ini (maksimal 2 video)</label>
-  <input id="videoTitik" type="file" accept="video/*" multiple style="display:none">
-  <input id="videoKamera" type="file" accept="video/*" capture="environment" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-  <div class="actions">
-    <button type="button" class="primary" onclick="pbOpenCamera('videoKamera')">🎥 Rekam Video</button>
-    <button type="button" class="light" onclick="document.getElementById('videoTitik').click()">＋ Pilih Video dari Galeri</button>
-    <span id="videoCount" class="empty">0/2 video</span>
-  </div>
-  <small class="empty">Tekan Tambah Video berkali-kali untuk menambahkan video satu per satu. Video lama tetap tersimpan.</small>
-  <div id="videoPreview" class="media-preview"></div>
-</div>
-<div class="section">H. SINKRONISASI DATA ONLINE</div>
-<div class="field full">
-  <label>Koneksi Supabase Curahdami</label>
-  <small class="empty">Aplikasi ini terhubung ke database Supabase khusus Kecamatan Curahdami. Data tetap tersimpan lokal dan dapat disinkronkan saat internet tersedia.</small>
-  <div class="actions">
-    <button type="button" class="light" onclick="ujiKoneksiSupabase()">🔌 Periksa Koneksi</button>
-    <button type="button" class="primary" onclick="sinkronkanTitikAktif()">☁️ Sinkronkan Titik Ini</button>
-    <button type="button" class="gold" onclick="sinkronkanSemua()">☁️ Sinkronkan Semua Data</button>
-    <button type="button" class="light" onclick="ambilDataSupabase()">⬇️ Ambil Data Online</button>
-  </div>
-  <div id="syncStatus" class="empty" role="status">Status: tersimpan lokal / belum disinkronkan.</div>
-</div>
-
-<div class="actions"><button class="primary" type="submit">💾 Simpan Titik</button><button class="light" type="button" onclick="newEntry()">＋ Titik Baru</button><button class="gold" type="button" onclick="pdfOne()">PDF Titik Ini</button><button class="light" type="button" onclick="clearForm()">Kosongkan Form</button></div>
+<div class="actions"><button class="primary" type="submit">💾 Simpan Titik</button></div>
 
 <div class="point-progress" id="pointProgress" aria-label="Status 10 titik tersimpan"></div>
 
@@ -352,20 +316,11 @@ a{overflow-wrap:anywhere}
 
 <div class="foot">* Wajib diisi. Nama kegiatan, volume, dan anggaran mengacu pada RAB. Jumlah pemanfaat dikonfirmasi kepada pemerintah desa.</div></main>
 
-<aside class="panel"><h2>Daftar 10 Titik</h2><div id="list" class="empty">Belum ada data tersimpan.</div><div class="actions">
-
-<button class="primary" style="width:100%" onclick="pdfAll()">📄 PDF Gabungan Desa Ini</button><button class="light" style="width:100%" onclick="pdfAllVillages()">📚 PDF Gabungan 11 Desa</button><button class="gold" style="width:100%" onclick="unduhPaketSemua()">⬇️ Unduh Data + Foto + Video (ZIP)</button><button class="danger" style="width:100%" onclick="erase()">Hapus Semua Data</button></div>
-
-<div class="foot">PDF gabungan berisi seluruh titik yang sudah disimpan. Simpan PDF ke perangkat untuk dokumentasi dan pelaporan.</div></aside></div></div>
+<aside class="panel"><h2>Daftar 10 Titik</h2><div id="list" class="empty">Belum ada data tersimpan.</div></aside></div></div>
 </div>
 <section id="recapMenu" class="panel" style="display:none;margin-top:14px">
   <h2>REKAP DATA PRAKTIK BAIK DANA DESA — KECAMATAN CURAHDAMI</h2>
   <p class="empty">Rekap menampilkan seluruh data titik yang sudah disimpan, dikelompokkan berdasarkan desa.</p>
-  <div class="actions">
-    <button class="primary" type="button" onclick="pdfAllVillages()">📚 Cetak / PDF Seluruh Desa</button>
-    <button class="gold" type="button" onclick="unduhPaketSemua()">⬇️ Unduh Data + Foto + Video (ZIP)</button>
-    <button class="light" type="button" onclick="drawRecap()">↻ Perbarui Rekap</button>
-  </div>
   <div id="recapContent"></div>
 </section>
 
@@ -473,7 +428,25 @@ function saveVillageName(){let name=$('#villageName').value.trim();if(!name){ale
 
 function newEntry(){let n=1;while(n<=10&&points()[n])n++;if(n>10){alert('Sepuluh titik untuk '+store.villages[village].name+' sudah terisi. Pilih titik untuk mengedit.');return}form.reset();choose(n)}
 
-form.addEventListener('submit',e=>{e.preventDefault();if(!form.reportValidity())return;let data=read();data.desa=selectedVillageName();data.kecamatan='Curahdami';data.kabupaten='Bondowoso';data.provinsi='Jawa Timur';data.pelaksana='TPK Desa '+selectedVillageName();store.villages[village].name=selectedVillageName();points()[cur]=data;persist();alert('Titik '+cur+' di '+store.villages[village].name+' berhasil disimpan.')});
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!form.reportValidity())return;
+  let data=read();
+  data.desa=selectedVillageName();data.kecamatan='Curahdami';data.kabupaten='Bondowoso';data.provinsi='Jawa Timur';data.pelaksana='TPK Desa '+selectedVillageName();
+  data._localUpdatedAt=new Date().toISOString();
+  store.villages[village].name=selectedVillageName();
+  points()[cur]=data;
+  const savedVillage=village,savedPoint=cur;
+  persist();
+  try{
+    await pbSyncOne(savedVillage,savedPoint);
+    store.villages[savedVillage].points[savedPoint]._cloudUpdatedAt=store.villages[savedVillage].points[savedPoint]._localUpdatedAt;
+    persist();
+    alert('Titik '+savedPoint+' berhasil disimpan di perangkat dan otomatis disinkronkan ke Supabase Curahdami.');
+  }catch(err){
+    alert('Titik '+savedPoint+' tersimpan di perangkat. Sinkronisasi online belum berhasil: '+err.message+'\nData lokal tetap aman dan akan dicoba lagi saat internet tersedia.');
+  }
+});
 
 function clearForm(){if(confirm('Kosongkan form? Data tersimpan tidak dihapus.')){form.reset();fill(defaults());form.elements.desa.value=store.villages[village].name;form.elements.kecamatan.value='Curahdami';form.elements.kabupaten.value='Bondowoso';form.elements.provinsi.value='Jawa Timur';form.elements.pelaksana.value='TPK Desa '+store.villages[village].name}}
 
@@ -523,6 +496,9 @@ function pdfAll(){let a=entriesCurrent(),p=makeFor(a);if(p)p.save('Praktik_Baik_
 
 function pdfAllVillages(){let a=entriesAll(),p=makeFor(a);if(p)p.save('Praktik_Baik_11_Desa_'+a.length+'_Titik.pdf')}
 
+function pdfVillage(key){const v=store.villages[key];if(!v)return;const entries=Object.keys(v.points||{}).map(Number).sort((a,b)=>a-b).map(n=>({n,d:v.points[n],vName:v.name}));const p=makeFor(entries);if(p)p.save('Praktik_Baik_'+v.name.replace(/[^a-z0-9]+/gi,'_')+'_'+entries.length+'_Titik.pdf')}
+function pdfPoint(key,n){const v=store.villages[key];if(!v||!v.points||!v.points[n])return;const p=makeFor([{n,d:v.points[n],vName:v.name}]);if(p)p.save('Praktik_Baik_'+v.name.replace(/[^a-z0-9]+/gi,'_')+'_Titik_'+n+'.pdf')}
+
 function erase(){if(confirm('Hapus seluruh data dari 11 desa? Data yang dihapus tidak dapat dikembalikan.')){store={villages:{A:{name:'Jetis',points:{}},B:{name:'Pakuwesi',points:{}},C:{name:'Kupang',points:{}},D:{name:'Petung',points:{}},E:{name:'Penambangan',points:{}},F:{name:'Curahpoh',points:{}},G:{name:'Poncogati',points:{}},H:{name:'Sumbersuko',points:{}},I:{name:'Selolembu',points:{}},J:{name:'Locare',points:{}},K:{name:'Sumber Salak',points:{}}}};persist();form.reset();choose(1)}}
 
 
@@ -544,7 +520,7 @@ function drawRecap(){
   let out='<div class="stats"><div class="stat"><b>'+total+'/110</b><span>Total titik tersimpan</span></div><div class="stat"><b>'+villages.filter(v=>Object.keys(v.points||{}).length>0).length+'/11</b><span>Desa sudah memiliki data</span></div><div class="stat"><b>'+(110-total)+'</b><span>Titik belum diisi</span></div></div>';
   villages.forEach(v=>{
     const nums=Object.keys(v.points||{}).map(Number).sort((a,b)=>a-b);
-    out+='<div class="recap-village"><h3>Desa '+esc(v.name)+' — '+nums.length+'/10 titik</h3>';
+    out+='<div class="recap-village"><div class="recap-village-head"><h3>Desa '+esc(v.name)+' — '+nums.length+'/10 titik</h3></div>';
     if(!nums.length){
       out+='<div class="recap-empty">Belum ada data input untuk desa ini.</div>';
     }else{
@@ -553,7 +529,7 @@ function drawRecap(){
         '</tr></thead><tbody>';
       nums.forEach(n=>{
         const d=v.points[n]||{};
-        out+='<tr><td>'+n+'</td><td>'+esc(d.nama)+'</td><td>'+esc(d.dusun)+'</td><td>'+esc(d.rt)+' / '+esc(d.rw)+'</td><td>'+esc(d.sumber)+'</td><td>'+esc(d.tahun)+'</td><td>'+esc(d.anggaran?rupiah(d.anggaran):'')+'</td><td>'+esc(d.volume)+'</td><td>'+esc(d.mulai)+'</td><td>'+esc(d.selesai)+'</td><td>'+esc(d.pelaksana)+'</td><td>'+esc(d.pemanfaat)+' '+esc(d.satuan)+'</td><td>'+esc(d.miskin)+'</td><td>'+esc(d.sebelum)+'</td><td>'+esc(d.sesudah)+'</td><td><button class="primary" type="button" onclick="lihatRecap(&quot;'+v.key+'&quot;,'+n+')">Lihat</button> <button class="light" type="button" onclick="editRecap(&quot;'+v.key+'&quot;,'+n+')">Edit</button></td></tr>';
+        out+='<tr><td>'+n+'</td><td>'+esc(d.nama)+'</td><td>'+esc(d.dusun)+'</td><td>'+esc(d.rt)+' / '+esc(d.rw)+'</td><td>'+esc(d.sumber)+'</td><td>'+esc(d.tahun)+'</td><td>'+esc(d.anggaran?rupiah(d.anggaran):'')+'</td><td>'+esc(d.volume)+'</td><td>'+esc(d.mulai)+'</td><td>'+esc(d.selesai)+'</td><td>'+esc(d.pelaksana)+'</td><td>'+esc(d.pemanfaat)+' '+esc(d.satuan)+'</td><td>'+esc(d.miskin)+'</td><td>'+esc(d.sebelum)+'</td><td>'+esc(d.sesudah)+'</td><td><div class="mini"><button class="primary" type="button" onclick="lihatRecap(&quot;'+v.key+'&quot;,'+n+')">Lihat</button><button class="light" type="button" onclick="editRecap(&quot;'+v.key+'&quot;,'+n+')">Edit</button><button class="gold" type="button" onclick="pdfPoint(&quot;'+v.key+'&quot;,'+n+')">PDF</button></div></td></tr>';
       });
       out+='</tbody></table></div>';
     }
@@ -685,8 +661,8 @@ async function pbHandleMediaInput(type,input){
   catch(err){alert(`Gagal menyimpan ${type}: ${err.message}`);pbStatus(`Gagal menyimpan ${type}: ${err.message}`);}
   finally{input.value='';}
 }
-document.getElementById('fotoTitik')?.addEventListener('change',e=>pbHandleMediaInput('foto',e.target));
-document.getElementById('videoTitik')?.addEventListener('change',e=>pbHandleMediaInput('video',e.target));
+
+
 
 function buatNarasiOtomatis(){
   const d=read(),val=x=>String(x||'').trim();
@@ -733,7 +709,7 @@ async function pbSyncOne(key,n){
       media.push({type,name:file.name,path,url:urlData.publicUrl,size:file.size,mime:file.mime});
     }
   }
-  const row={id:`${key}_titik_${n}`,kode_desa:key,desa:v.name,titik:Number(n),data:d,media,updated_at:new Date().toISOString()};
+  const stamp=d._localUpdatedAt||new Date().toISOString();const row={id:`${key}_titik_${n}`,kode_desa:key,desa:v.name,titik:Number(n),data:d,media,updated_at:stamp};
   const {error}=await sb.from(SB_TABLE).upsert(row,{onConflict:'id'});if(error)throw error;
   return media.length;
 }
@@ -748,29 +724,79 @@ async function sinkronkanSemua(){
     pbStatus(`Selesai. ${done} titik telah dikirim ke Supabase Curahdami.`);alert(`${done} titik berhasil disinkronkan.`);
   }catch(e){pbStatus('Sinkronisasi terhenti: '+e.message);alert('Sinkronisasi terhenti: '+e.message+'\nData lokal tetap aman.');}
 }
-async function ambilDataSupabase(){
-  try{pbStatus('Mengambil data dari Supabase...');const sb=await supabaseReady();const {data,error}=await sb.from(SB_TABLE).select('id,kode_desa,desa,titik,data,media,updated_at');if(error)throw error;
+async function ambilDataSupabase(silent=false){
+  try{
+    if(!silent)pbStatus('Mengambil data dari Supabase...');
+    const sb=await supabaseReady();
+    const {data,error}=await sb.from(SB_TABLE).select('id,kode_desa,desa,titik,data,media,updated_at');
+    if(error)throw error;
     let count=0;
     for(const row of (data||[])){
-      const k=row.kode_desa,n=Number(row.titik);if(!store.villages[k]||!n)continue;
+      const k=row.kode_desa,n=Number(row.titik);
+      if(!store.villages[k]||!n)continue;
       store.villages[k].name=row.desa||store.villages[k].name;
-      const remoteDate=Date.parse(row.updated_at||'')||0,local=store.villages[k].points[n];
-      if(!local||remoteDate>=(Date.parse(local._cloudUpdatedAt||'')||0)){store.villages[k].points[n]={...(row.data||{}),_cloudUpdatedAt:row.updated_at||''};count++;}
-      // Recreate local media from public Storage URLs so existing preview and PDF tools can use them.
-      for(const m of (row.media||[])){if(!m.url)continue;try{const resp=await fetch(m.url);if(!resp.ok)continue;const blob=await resp.blob();const db=await pbDb();const id=m.path||`${k}_${n}_${m.type}_${m.name}`;await new Promise((resolve,reject)=>{const tx=db.transaction(PB_MEDIA_STORE,'readwrite');tx.objectStore(PB_MEDIA_STORE).put({id,group:`${k}_${n}_${m.type}`,type:m.type,name:m.name||'media',mime:m.mime||blob.type,size:blob.size,blob,addedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});}catch(mediaErr){console.warn('Media online tidak dapat diunduh:',mediaErr)}}
+      const remoteDate=Date.parse(row.updated_at||'')||0;
+      const local=store.villages[k].points[n];
+      const localDate=Date.parse(local?._localUpdatedAt||local?._cloudUpdatedAt||'')||0;
+      if(!local||remoteDate>=localDate){
+        store.villages[k].points[n]={...(row.data||{}),_cloudUpdatedAt:row.updated_at||'',_localUpdatedAt:row.updated_at||''};
+        count++;
+      }
+      // Foto/video: pertahankan mekanisme unduh media jika media pernah ada di cloud.
+      for(const m of (row.media||[])){
+        if(!m.url)continue;
+        try{
+          const resp=await fetch(m.url);if(!resp.ok)continue;
+          const blob=await resp.blob(),db=await pbDb();
+          const id=m.path||`${k}_${n}_${m.type}_${m.name}`;
+          await new Promise((resolve,reject)=>{
+            const tx=db.transaction(PB_MEDIA_STORE,'readwrite');
+            tx.objectStore(PB_MEDIA_STORE).put({id,group:`${k}_${n}_${m.type}`,type:m.type,name:m.name||'media',mime:m.mime||blob.type,size:blob.size,blob,addedAt:Date.now()});
+            tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+          });
+        }catch(mediaErr){console.warn('Media online tidak dapat diunduh:',mediaErr)}
+      }
     }
-    persist();await pbDrawMedia();pbStatus(`Selesai. ${count} titik diperbarui dari Supabase.`);alert(`Pengambilan data selesai. ${count} titik diperbarui.`);
-  }catch(e){pbStatus('Gagal mengambil data: '+e.message);alert('Gagal mengambil data online: '+e.message)}
+    persist();
+    if(!silent){await pbDrawMedia();pbStatus(`Selesai. ${count} titik diperbarui dari Supabase.`);alert(`Pengambilan data selesai. ${count} titik diperbarui.`);}
+    return data||[];
+  }catch(e){
+    if(!silent){pbStatus('Gagal mengambil data: '+e.message);alert('Gagal mengambil data online: '+e.message);}
+    else console.warn('Sinkronisasi awal Supabase:',e.message);
+    return null;
+  }
 }
-window.addEventListener('online',()=>pbStatus('Internet tersedia. Data lokal aman; gunakan Sinkronkan Semua Data untuk mengirim perubahan.'));
+async function pbAutoSyncAll(){
+  if(!navigator.onLine)return;
+  const rows=await ambilDataSupabase(true);
+  if(rows===null)return;
+  const keys=['A','B','C','D','E','F','G','H','I','J','K'];
+  for(const k of keys){
+    for(const n of Object.keys(store.villages[k].points||{}).map(Number).sort((a,b)=>a-b)){
+      const d=store.villages[k].points[n];
+      const cloud=rows.find(r=>r.id===`${k}_titik_${n}`);
+      const localTime=Date.parse(d._localUpdatedAt||'')||0;
+      const cloudTime=Date.parse(cloud?.updated_at||'')||0;
+      if(!cloud||localTime>cloudTime){
+        try{
+          await pbSyncOne(k,n);
+          store.villages[k].points[n]._cloudUpdatedAt=d._localUpdatedAt||new Date().toISOString();
+        }catch(err){console.warn(`Gagal sinkron ${k}/${n}:`,err.message);}
+      }
+    }
+  }
+  persist();
+}
+window.addEventListener('online',()=>{pbStatus('Internet tersedia. Menyinkronkan data otomatis...');pbAutoSyncAll();});
+window.addEventListener('load',()=>{setTimeout(()=>pbAutoSyncAll(),900);});
 Promise.resolve().then(()=>pbDrawMedia().catch(e=>console.warn('Media lokal:',e)));
 
 Promise.resolve().then(()=>pbDrawMedia().catch(e=>console.warn('Media lokal:',e)));
 
 
 // Kamera langsung: hasil foto/video masuk ke titik aktif dan tersimpan di IndexedDB.
-document.getElementById('fotoKamera')?.addEventListener('change',e=>pbHandleMediaInput('foto',e.target));
-document.getElementById('videoKamera')?.addEventListener('change',e=>pbHandleMediaInput('video',e.target));
+
+
 
 // Unduh cadangan lengkap: data kegiatan + semua foto/video lokal dalam satu ZIP.
 async function unduhPaketSemua(){
